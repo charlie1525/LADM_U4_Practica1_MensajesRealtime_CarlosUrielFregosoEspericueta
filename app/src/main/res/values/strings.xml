@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">LADM_U4_Practica1_MensajesRealtime_CarlosUrielFregosoEspericueta</string>
+    <string name="app_name2">Mensajes con Realtime</string>
+    <string name="tel">Teléfono</string>
+    <string name="mensaje">Mensaje</string>
+    <string name="enviarmsm">Enviar</string>
+</resources>
