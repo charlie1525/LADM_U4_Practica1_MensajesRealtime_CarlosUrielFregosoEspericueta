@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {// fin de la clase
                     listaId.add(id!!)
                     val telefono = data.getValue<History>()?.celphone
                     val mensaje = data.getValue<History>()?.message
-                    datos.add("Emisor: $telefono\nMensaje: $mensaje")
+                    datos.add("Receptor: $telefono\nMensaje: $mensaje")
                 }// fin del for
                 mostrarLista(datos)
             }// fin del OnDataChange
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {// fin de la clase
                 bd.child("historial").push().setValue(historialPersonal)
                     .addOnFailureListener {alerta("Error...\n${it.message}")}
                     .addOnSuccessListener {
-                        mensaje("mensaje guardaado")
+                        mensaje("mensaje guardado")
                     }
 
                 mensajes.clear()
