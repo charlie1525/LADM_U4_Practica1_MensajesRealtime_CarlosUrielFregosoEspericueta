@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "47266698635",
+    "project_id": "ladmu4practica1carlosuriel",
+    "storage_bucket": "ladmu4practica1carlosuriel.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47266698635:android:79f0dbd58bdb3494a4cb8e",
+        "android_client_info": {
+          "package_name": "mx.tecnm.ittepic.ladm_u4_practica1_mensajesrealtime_carlosurielfregosoespericueta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "47266698635-lnkb57svuf44lmokpkrbafm7n7oa9cpi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQb4Ezghwkt5FMyxFEIlIiBpCsQzXa_O4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "47266698635-lnkb57svuf44lmokpkrbafm7n7oa9cpi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

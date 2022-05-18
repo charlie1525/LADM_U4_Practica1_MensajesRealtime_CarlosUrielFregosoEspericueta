@@ -4,15 +4,25 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.telephony.SmsManager
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.FirebaseDatabaseKtxRegistrar
+import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.getValue
+import com.google.firebase.ktx.Firebase
 import mx.tecnm.ittepic.ladm_u4_practica1_mensajesrealtime_carlosurielfregosoespericueta.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {// fin de la clase
     lateinit var binding: ActivityMainBinding
     private val receivedPermission = 1
     private val sendPermission = 1
+    private val listaId = ArrayList<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,6 +30,26 @@ class MainActivity : AppCompatActivity() {// fin de la clase
         setContentView(binding.root)
 
         title = "Mensajeria con RealTime"
+
+        //conexión a la base de RealTime
+        val conection = FirebaseDatabase.getInstance().reference.child("historial")
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val datos = ArrayList<String>()
+                listaId.clear()
+                for (data in snapshot.children){
+                    val id = data.key
+                    listaId.add(id!!)
+                    val telefono = data.getValue<History>()?.celphone
+                    val mensaje = data.getValue<History>()?.message
+                    datos.add("Emisor: $telefono\nMensaje: $mensaje")
+                }// fin del for
+                mostrarLista(datos)
+            }// fin del OnDataChange
+
+            override fun onCancelled(error: DatabaseError) {}
+        }// fin del value event Listener
+        conection.addValueEventListener(postListener)
 
         if (ActivityCompat.checkSelfPermission
                 (this,android.Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED)
@@ -42,14 +72,30 @@ class MainActivity : AppCompatActivity() {// fin de la clase
                 )
             }// fin del cuerpo del If
             else {
-                enviaSMS(binding.txtTelefono.text.toString(), binding.txtMensaje.text.toString())
-                binding.txtMensaje.text.clear()
-                binding.txtTelefono.text.clear()
+                val mensajes = binding.txtMensaje.text
+                val telefonos = binding.txtTelefono.text
+
+                val bd = Firebase.database.reference
+                val historialPersonal = History(telefonos.toString(),mensajes.toString())
+
+                enviaSMS(telefonos.toString(), mensajes.toString())
+                bd.child("historial").push().setValue(historialPersonal)
+                    .addOnFailureListener {alerta("Error...\n${it.message}")}
+                    .addOnSuccessListener {
+                        mensaje("mensaje guardaado")
+                    }
+
+                mensajes.clear()
+                telefonos.clear()
             }
         }
 
 
     }// fin del onCreate
+
+    private fun mostrarLista(datos: ArrayList<String>) {
+        binding.lvContactos.adapter = ArrayAdapter(this,android.R.layout.simple_list_item_1,datos)
+    }
 
     override fun onRequestPermissionsResult( requestCode: Int,permissions: Array<out String>,grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
