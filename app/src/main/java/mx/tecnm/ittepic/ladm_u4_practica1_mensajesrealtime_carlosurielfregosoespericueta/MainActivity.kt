@@ -17,12 +17,18 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import mx.tecnm.ittepic.ladm_u4_practica1_mensajesrealtime_carlosurielfregosoespericueta.databinding.ActivityMainBinding
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {// fin de la clase
     lateinit var binding: ActivityMainBinding
     private val receivedPermission = 1
     private val sendPermission = 1
     private val listaId = ArrayList<String>()
+    private val calendar = GregorianCalendar.getInstance()
+    private val date = "${calendar.get(Calendar.DAY_OF_MONTH)}/${calendar.get(Calendar.MONTH)}/${calendar.get(Calendar.YEAR)}"
+    private var hour = "${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}:${calendar.get(Calendar.SECOND)}"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +36,7 @@ class MainActivity : AppCompatActivity() {// fin de la clase
         setContentView(binding.root)
 
         title = "Mensajeria con RealTime"
+        mensaje("$date | $hour")
 
         //conexión a la base de RealTime
         val conection = FirebaseDatabase.getInstance().reference.child("historial")
@@ -42,7 +49,9 @@ class MainActivity : AppCompatActivity() {// fin de la clase
                     listaId.add(id!!)
                     val telefono = data.getValue<History>()?.celphone
                     val mensaje = data.getValue<History>()?.message
-                    datos.add("Receptor: $telefono\nMensaje: $mensaje")
+                    val dia = data.getValue<History>()?.date
+                    val hora = data.getValue<History>()?.hour
+                    datos.add("Receptor: $telefono\nMensaje: $mensaje\nDía: $dia, a las $hora")
                 }// fin del for
                 mostrarLista(datos)
             }// fin del OnDataChange
@@ -74,9 +83,10 @@ class MainActivity : AppCompatActivity() {// fin de la clase
             else {
                 val mensajes = binding.txtMensaje.text
                 val telefonos = binding.txtTelefono.text
+                hour = "${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}:${calendar.get(Calendar.SECOND)}"
 
                 val bd = Firebase.database.reference
-                val historialPersonal = History(telefonos.toString(),mensajes.toString())
+                val historialPersonal = History(telefonos.toString(), mensajes.toString(),date,hour)
 
                 enviaSMS(telefonos.toString(), mensajes.toString())
                 bd.child("historial").push().setValue(historialPersonal)
@@ -115,7 +125,7 @@ class MainActivity : AppCompatActivity() {// fin de la clase
     private fun alerta(mensaje: String) {
         AlertDialog.Builder(this)
             .setMessage(mensaje)
-            .setPositiveButton("ok") { d, i -> }
+            .setPositiveButton("ok") { _, _ -> }
             .show()
     }
 

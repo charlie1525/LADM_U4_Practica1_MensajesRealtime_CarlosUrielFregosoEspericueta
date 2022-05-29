@@ -34,6 +34,7 @@ android {
     buildFeatures{
         viewBinding true
     }
+    namespace 'mx.tecnm.ittepic.ladm_u4_practica1_mensajesrealtime_carlosurielfregosoespericueta'
 }
 
 dependencies {
