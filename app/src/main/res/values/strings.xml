@@ -4,4 +4,5 @@
     <string name="tel">Teléfono</string>
     <string name="mensaje">Mensaje</string>
     <string name="enviarmsm">Enviar</string>
+    <string name="exportar">Exportar historial</string>
 </resources>

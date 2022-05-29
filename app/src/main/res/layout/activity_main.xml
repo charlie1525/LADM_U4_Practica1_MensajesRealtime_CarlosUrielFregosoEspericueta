@@ -33,10 +33,16 @@
         android:layout_marginTop="20dp"/>
 
     <ListView
+        android:id="@+id/lvContactos"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="20dp"
-        android:id="@+id/lvContactos"/>
+        android:layout_height="378dp"
+        android:layout_marginTop="20dp" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/exportar"
+        android:id="@+id/btnExportar"/>
 
 
 </LinearLayout>

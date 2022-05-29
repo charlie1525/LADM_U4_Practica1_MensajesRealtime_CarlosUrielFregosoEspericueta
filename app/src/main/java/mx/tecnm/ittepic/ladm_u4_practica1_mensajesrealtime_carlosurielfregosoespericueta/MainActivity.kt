@@ -1,24 +1,28 @@
 package mx.tecnm.ittepic.ladm_u4_practica1_mensajesrealtime_carlosurielfregosoespericueta
 
+import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.telephony.SmsManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.FirebaseDatabaseKtxRegistrar
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import mx.tecnm.ittepic.ladm_u4_practica1_mensajesrealtime_carlosurielfregosoespericueta.databinding.ActivityMainBinding
+import java.io.*
+import java.lang.Exception
+import java.nio.file.Paths
 import java.util.*
-import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {// fin de la clase
     lateinit var binding: ActivityMainBinding
@@ -28,6 +32,10 @@ class MainActivity : AppCompatActivity() {// fin de la clase
     private val calendar = GregorianCalendar.getInstance()
     private val date = "${calendar.get(Calendar.DAY_OF_MONTH)}/${calendar.get(Calendar.MONTH)}/${calendar.get(Calendar.YEAR)}"
     private var hour = "${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}:${calendar.get(Calendar.SECOND)}"
+    private val arrMensaje = ArrayList<String>()
+    private val arrReceptor = ArrayList<String>()
+    private val arrHora = ArrayList<String>()
+    private val datos = ArrayList<String>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,14 +44,16 @@ class MainActivity : AppCompatActivity() {// fin de la clase
         setContentView(binding.root)
 
         title = "Mensajeria con RealTime"
-        mensaje("$date | $hour")
 
         //conexión a la base de RealTime
         val conection = FirebaseDatabase.getInstance().reference.child("historial")
         val postListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val datos = ArrayList<String>()
                 listaId.clear()
+                datos.clear()
+                arrMensaje.clear()
+                arrHora.clear()
+                arrReceptor.clear()
                 for (data in snapshot.children){
                     val id = data.key
                     listaId.add(id!!)
@@ -51,6 +61,9 @@ class MainActivity : AppCompatActivity() {// fin de la clase
                     val mensaje = data.getValue<History>()?.message
                     val dia = data.getValue<History>()?.date
                     val hora = data.getValue<History>()?.hour
+                    arrMensaje.add(mensaje!!)
+                    arrReceptor.add(telefono!!)
+                    arrHora.add("$dia,$hora")
                     datos.add("Receptor: $telefono\nMensaje: $mensaje\nDía: $dia, a las $hora")
                 }// fin del for
                 mostrarLista(datos)
@@ -60,6 +73,7 @@ class MainActivity : AppCompatActivity() {// fin de la clase
         }// fin del value event Listener
         conection.addValueEventListener(postListener)
 
+        // inicio de la programacion de la actividad
         if (ActivityCompat.checkSelfPermission
                 (this,android.Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED)
                 {
@@ -98,7 +112,12 @@ class MainActivity : AppCompatActivity() {// fin de la clase
                 mensajes.clear()
                 telefonos.clear()
             }
-        }
+        } // fin del boton para enviar
+
+        binding.btnExportar.setOnClickListener {
+            guardarArchivo(listaId.size,arrReceptor,arrMensaje,arrHora)
+            leerArchivo()
+        }// fin del boton para exportar
 
 
     }// fin del onCreate
@@ -107,7 +126,9 @@ class MainActivity : AppCompatActivity() {// fin de la clase
         binding.lvContactos.adapter = ArrayAdapter(this,android.R.layout.simple_list_item_1,datos)
     }
 
-    override fun onRequestPermissionsResult( requestCode: Int,permissions: Array<out String>,grantResults: IntArray) {
+    override fun onRequestPermissionsResult
+                (requestCode: Int,permissions: Array<out String>,grantResults: IntArray)
+    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode == sendPermission) mensaje("Permisos de envio concedidos")
         if(requestCode == receivedPermission) mensaje("Permisos de recepcion concedidos")
@@ -129,5 +150,35 @@ class MainActivity : AppCompatActivity() {// fin de la clase
             .show()
     }
 
+    private fun guardarArchivo(index:Int, receptor:ArrayList<String>, mensage:ArrayList<String>, hora:ArrayList<String>){
+        try{
+            val archivo = OutputStreamWriter(openFileOutput("MessageHistory.txt", MODE_PRIVATE))
+            var cadena =""
+            val header="Receptor,Mensage,Día,Hora\n"
+            cadena = header
+            for (it in 0 until index){ cadena += "${receptor[it]},${mensage[it]},${hora[it]}\n" }
+            archivo.write(cadena)
+            archivo.flush()
+            archivo.close()
 
+            mensaje("Archivo guaardado")
+        } catch (a : Exception){ alerta("${a.message}") }
+
+
+    }// fin del guardar archivos
+
+    private fun leerArchivo() {
+        try{
+            val archivo = BufferedReader(InputStreamReader(openFileInput("MessageHistory.txt")))
+            var cadena = ""
+            archivo.forEachLine {
+                cadena += " "+archivo.readText()
+            }
+            archivo.close()
+            alerta(cadena)
+           // alerta(fileOut.toString())
+        } catch (a : java.lang.Exception){
+            alerta("${a.message}\nError de lectura")
+        }
+    } // fin de la función
 }
